@@ -29,6 +29,8 @@ Route::group(['middleware' => ['auth:api']], function() {
     Route::post('products/{product}/favorite', 'ProductsController@favor');
     Route::delete('products/{product}/favorite', 'ProductsController@disfavor');
 
+    Route::post('cart', 'CartController@add');
+
 
 });
 
