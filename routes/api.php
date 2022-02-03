@@ -28,6 +28,8 @@ Route::group(['middleware' => ['auth:api']], function() {
     Route::post('user_addresses/{user_address}', 'UserAddressesController@update');
     Route::delete('user_addresses/{user_address}', 'UserAddressesController@destroy');
 
+    Route::post('products/{product}/favorite', 'ProductsController@favor');
+    Route::delete('products/{product}/favorite', 'ProductsController@disfavor');
 
 
 });
