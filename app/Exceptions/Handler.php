@@ -61,7 +61,7 @@ class Handler extends ExceptionHandler
             return $this->error($result, $e->getCode());
         }
 
-        if($request->is('1api/*')){
+        if($request->is('api/*')){
             $response = [];
             $error = $this->convertExceptionToResponse($e);
             $response['status'] = $error->getStatusCode();
