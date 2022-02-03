@@ -18,9 +18,6 @@ Route::group(['prefix' => 'auth'], function(){
     Route::post('me', 'AuthController@me');
 });
 
-Route::get('products/{product}', 'ProductsController@show');
-Route::get('products', 'ProductsController@index');
-
 Route::group(['middleware' => ['auth:api']], function() {
     Route::get('user_addresses', 'UserAddressesController@index');
     Route::post('user_addresses', 'UserAddressesController@store');
@@ -28,9 +25,12 @@ Route::group(['middleware' => ['auth:api']], function() {
     Route::post('user_addresses/{user_address}', 'UserAddressesController@update');
     Route::delete('user_addresses/{user_address}', 'UserAddressesController@destroy');
 
+    Route::get('products/favorites', 'ProductsController@favorites');
     Route::post('products/{product}/favorite', 'ProductsController@favor');
     Route::delete('products/{product}/favorite', 'ProductsController@disfavor');
 
 
 });
 
+Route::get('products/{product}', 'ProductsController@show');
+Route::get('products', 'ProductsController@index');

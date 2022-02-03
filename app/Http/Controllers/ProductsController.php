@@ -88,5 +88,11 @@ class ProductsController extends Controller
         return $this->success([]);
     }
 
+    public function favorites(Request $request)
+    {
+        $products = $request->user()->favoriteProducts()->paginate(16);
+
+        return $this->success(['products' => $products]);
+    }
 
 }
