@@ -60,5 +60,4 @@ class ProductsController extends Controller
         return $this->success(['product' => $product]);
     }
 
-
 }

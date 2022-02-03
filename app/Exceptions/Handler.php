@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use App\Helpers\ApiResponse;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use App\Exceptions\ApiException;
 use Illuminate\Validation\ValidationException;
 
 class Handler extends ExceptionHandler
@@ -16,7 +17,7 @@ class Handler extends ExceptionHandler
      * @var array<int, class-string<Throwable>>
      */
     protected $dontReport = [
-        //
+        ApiResponse::class,
     ];
 
     /**
@@ -52,15 +53,6 @@ class Handler extends ExceptionHandler
 
     public function handle($request, Exception $e)
     {
-        if ($e instanceof ApiException) {
-            $result = [
-                "msg"    => $e->getMessage(),
-                "data"   => '',
-                "status" => 0
-            ];
-            return $this->error($result, $e->getCode());
-        }
-
         if($request->is('api/*')){
             $response = [];
             $error = $this->convertExceptionToResponse($e);
