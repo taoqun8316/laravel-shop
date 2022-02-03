@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\UserAddress;
 use App\Http\Requests\UserAddressRequest;
 
 class UserAddressesController extends Controller
@@ -16,9 +17,29 @@ class UserAddressesController extends Controller
 
     public function store(UserAddressRequest $request)
     {
-        print_r(4321);die;
-
         $request->user()->addresses()->create($request->only([
+            'province',
+            'city',
+            'district',
+            'address',
+            'zip',
+            'contact_name',
+            'contact_phone',
+        ]));
+
+        return $this->success([]);
+    }
+
+    public function edit(UserAddress $user_address)
+    {
+        return $this->success([
+            'address' => $user_address
+        ]);
+    }
+
+    public function update(UserAddress $user_address, UserAddressRequest $request)
+    {
+        $user_address->update($request->only([
             'province',
             'city',
             'district',
