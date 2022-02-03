@@ -32,6 +32,8 @@ class UserAddressesController extends Controller
 
     public function edit(UserAddress $user_address)
     {
+        $this->authorize('own', $user_address);
+
         return $this->success([
             'address' => $user_address
         ]);
@@ -39,6 +41,8 @@ class UserAddressesController extends Controller
 
     public function update(UserAddress $user_address, UserAddressRequest $request)
     {
+        $this->authorize('own', $user_address);
+
         $user_address->update($request->only([
             'province',
             'city',
@@ -51,5 +55,15 @@ class UserAddressesController extends Controller
 
         return $this->success([]);
     }
+
+    public function destroy(UserAddress $user_address)
+    {
+        $this->authorize('own', $user_address);
+
+        $user_address->delete();
+
+        return $this->success([]);
+    }
+
 
 }
