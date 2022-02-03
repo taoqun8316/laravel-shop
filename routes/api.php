@@ -20,6 +20,7 @@ Route::group(['prefix' => 'auth'], function(){
 
 Route::group(['middleware' => ['auth:api']], function() {
     Route::get('user_addresses', 'UserAddressesController@index');
+    Route::post('user_addresses', 'UserAddressesController@store');
 
 
 

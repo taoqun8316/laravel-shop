@@ -2,11 +2,14 @@
 
 namespace App\Exceptions;
 
+use App\Helpers\ApiResponse;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use Illuminate\Validation\ValidationException;
 
 class Handler extends ExceptionHandler
 {
+    use ApiResponse;
     /**
      * A list of the exception types that are not reported.
      *
@@ -38,4 +41,47 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    //invalidate exception
+    protected function invalidJson($request, ValidationException $exception)
+    {
+        return $this->error([
+            $exception->errors()
+        ], $exception->status, $exception->getMessage());
+    }
+
+    public function handle($request, Exception $e)
+    {
+        if ($e instanceof ApiException) {
+            $result = [
+                "msg"    => $e->getMessage(),
+                "data"   => '',
+                "status" => 0
+            ];
+            return $this->error($result, $e->getCode());
+        }
+
+        if($request->is('1api/*')){
+            $response = [];
+            $error = $this->convertExceptionToResponse($e);
+            $response['status'] = $error->getStatusCode();
+            $response['msg'] = 'something error';
+
+            if(config('app.debug')) {
+                $response['msg'] = empty($e->getMessage()) ? 'something error' : $e->getMessage();
+                if($error->getStatusCode() >= 500) {
+                    if(config('app.debug')) {
+                        $response['trace'] = $e->getTraceAsString();
+                        $response['code'] = $e->getCode();
+                    }
+                }
+            }
+            $response['data'] = [];
+
+            return $this->error(222, $error->getStatusCode());
+        }
+
+        return parent::render($request, $e);
+    }
+
 }
