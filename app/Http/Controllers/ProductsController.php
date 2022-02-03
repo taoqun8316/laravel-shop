@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Models\Product;
 
@@ -49,5 +50,15 @@ class ProductsController extends Controller
             ],
         ]);
     }
+
+    public function show(Product $product, Request $request)
+    {
+        if (!$product->on_sale) {
+            throw new ApiException('商品未上架');
+        }
+
+        return $this->success(['product' => $product]);
+    }
+
 
 }
