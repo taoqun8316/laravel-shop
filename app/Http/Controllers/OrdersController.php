@@ -9,9 +9,33 @@ use App\Models\UserAddress;
 use App\Models\Order;
 use Carbon\Carbon;
 use App\Jobs\CloseOrder;
+use Illuminate\Http\Request;
 
 class OrdersController extends Controller
 {
+    public function index(Request $request)
+    {
+        $orders = Order::query()
+            // 使用 with 方法预加载，避免N + 1问题
+            ->with(['items.product', 'items.productSku'])
+            ->where('user_id', $request->user()->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate();
+
+        return $this->success([
+            'orders' => $orders
+        ]);
+    }
+
+    public function show(Order $order, Request $request)
+    {
+        $this->authorize('own', $order);
+
+        return $this->success([
+            'order' => $order->load(['items.productSku', 'items.product'])
+        ]);
+    }
+
     public function store(OrderRequest $request)
     {
         $user  = $request->user();

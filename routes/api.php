@@ -32,7 +32,10 @@ Route::group(['middleware' => ['auth:api']], function() {
     Route::post('cart', 'CartController@add');
     Route::get('cart', 'CartController@index');
     Route::delete('cart/{sku}', 'CartController@remove');
+
     Route::post('orders', 'OrdersController@store');
+    Route::get('orders', 'OrdersController@index');
+    Route::get('orders/{order}', 'OrdersController@show');
 
 
 });
