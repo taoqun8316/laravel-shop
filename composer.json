@@ -15,7 +15,8 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "overtrue/laravel-lang": "^5.0",
-        "tymon/jwt-auth": "1.*@rc"
+        "tymon/jwt-auth": "1.*@rc",
+        "yansongda/pay": "2.10.2"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
