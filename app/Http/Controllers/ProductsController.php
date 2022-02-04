@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Category;
+use App\Services\CategoryService;
 
 class ProductsController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, CategoryService $categoryService)
     {
         // 创建一个查询构造器
         $builder = Product::query()->where('on_sale', true);
@@ -25,6 +27,20 @@ class ProductsController extends Controller
                             ->orWhere('description', 'like', $like);
                     });
             });
+        }
+
+        if ($request->input('category_id') && $category = Category::find($request->input('category_id'))) {
+            // 如果这是一个父类目
+            if ($category->is_directory) {
+                // 则筛选出该父类目下所有子类目的商品
+                $builder->whereHas('category', function ($query) use ($category) {
+                    // 这里的逻辑参考本章第一节
+                    $query->where('path', 'like', $category->path.$category->id.'-%');
+                });
+            } else {
+                // 如果这不是一个父类目，则直接筛选此类目下的商品
+                $builder->where('category_id', $category->id);
+            }
         }
 
         // 是否有提交 order 参数，如果有就赋值给 $order 变量
@@ -44,6 +60,7 @@ class ProductsController extends Controller
 
         return $this->success([
             'products' => $products,
+            'categoryTree' => $categoryService->getCategoryTree(),
             'filters'  => [
                 'search' => $search,
                 'order'  => $order,
