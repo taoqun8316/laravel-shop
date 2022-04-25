@@ -13,10 +13,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // 放在 ProductsSeeder 之前
-        $this->call(CategoriesSeeder::class);
-        $this->call(ProductsSeeder::class);
-
         // \App\Models\User::factory(10)->create();
     }
 }
