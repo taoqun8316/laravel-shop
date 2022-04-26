@@ -37,6 +37,7 @@ Route::group(['middleware' => ['auth:api']], function() {
     Route::post('user_addresses', 'UserAddressesController@store');
     Route::get('user_addresses/{user_address}', 'UserAddressesController@edit');
     Route::post('user_addresses/{user_address}', 'UserAddressesController@update');
+    Route::delete('user_addresses/{user_address}', 'UserAddressesController@delete');
 
 
 });
