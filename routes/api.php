@@ -35,6 +35,9 @@ Route::get('/register', function(){
 Route::group(['middleware' => ['auth:api']], function() {
     Route::get('user_addresses', 'UserAddressesController@index');
     Route::post('user_addresses', 'UserAddressesController@store');
+    Route::get('user_addresses/{user_address}', 'UserAddressesController@edit');
+    Route::post('user_addresses/{user_address}', 'UserAddressesController@update');
+
 
 });
 
