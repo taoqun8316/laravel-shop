@@ -40,4 +40,12 @@ class ProductsController extends Controller
             ],
         ]);
     }
+
+    public function show(Product $product, Request $request)
+    {
+        return $this->success("获取成功", [
+            'product' => $product
+        ]);
+    }
+
 }
