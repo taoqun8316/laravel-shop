@@ -13,6 +13,26 @@ use Illuminate\Http\Request;
 
 class OrdersController extends Controller
 {
+    public function index(Request $request)
+    {
+        $orders = Order::query()->with([
+            'items.product', 'items.productSku'
+        ])->where("user_id", $request->user()->id)
+            ->orderBy("created_at","desc")->paginate();
+
+        return $this->success("获取成功", [
+            "orders" => $orders
+        ]);
+    }
+
+    public function show(Order $order, Request $request)
+    {
+        $this->authorize("own", $order);
+        return $this->success("获取成功", [
+            'order' => $order->load(['items.product', 'items.productSku'])
+        ]);
+    }
+
     public function store(OrderRequest $request)
     {
         $user = $request->user();
