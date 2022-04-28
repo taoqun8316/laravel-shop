@@ -17,4 +17,18 @@ class ProductSku extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function addStock($amount)
+    {
+        if ($amount>0){
+            $this->increment("stock", $amount);
+        }
+    }
+
+    public function decreaseStock($amount)
+    {
+        if ($amount>0){
+            return $this->where("stock", ">=", $amount)->decrement("stock", $amount);
+        }
+    }
+
 }
