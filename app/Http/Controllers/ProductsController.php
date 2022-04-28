@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ApiException;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -43,9 +44,40 @@ class ProductsController extends Controller
 
     public function show(Product $product, Request $request)
     {
+        if (!$product->on_sale) {
+            throw new ApiException('商品未上架');
+        }
+
+        $favored = false;
+
+        if ($user = $request->user()){
+            $favored = boolval($user->favoriteProducts()->find($product->id));
+        }
+
         return $this->success("获取成功", [
-            'product' => $product
+            'product' => $product,
+            'favored' => $favored
         ]);
+    }
+
+    public function favor(Product $product, Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->favoriteProducts()->find($product->id)){
+            return $this->success("收藏成功", []);
+        }
+
+        $user->favoriteProducts()->attach($product->id);
+        return $this->success("收藏成功", []);
+    }
+
+    public function disfavor(Product $product, Request $request)
+    {
+        $user = $request->user();
+
+        $user->favoriteProducts()->detach($product->id);
+        return $this->success("取消收藏成功", []);
     }
 
 }

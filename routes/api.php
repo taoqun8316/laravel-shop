@@ -29,16 +29,17 @@ Route::get('/register', function(){
 });
 
 Route::get('products', 'ProductsController@index');
-Route::get('products/{product}', 'ProductsController@show');
 
-
-Route::group(['middleware' => ['auth:api']], function() {
+Route::group(['middleware' => ['jwt.auth']], function() {
     Route::get('user_addresses', 'UserAddressesController@index');
     Route::post('user_addresses', 'UserAddressesController@store');
     Route::get('user_addresses/{user_address}', 'UserAddressesController@edit');
     Route::post('user_addresses/{user_address}', 'UserAddressesController@update');
     Route::delete('user_addresses/{user_address}', 'UserAddressesController@delete');
 
+    Route::get('products/{product}', 'ProductsController@show');
+    Route::post('products/{product}/favorite', 'ProductsController@favor');
+    Route::delete('products/{product}/favorite', 'ProductsController@disfavor');
 
 });
 

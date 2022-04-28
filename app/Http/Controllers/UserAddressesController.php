@@ -2,7 +2,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserAddress;
-use App\Policies\UserAddressPolicy;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserAddressRequest;
 

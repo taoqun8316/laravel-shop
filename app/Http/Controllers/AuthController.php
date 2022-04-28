@@ -8,7 +8,7 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
+        $this->middleware('jwt.auth', ['except' => ['login']]);
         // 另外关于上面的中间件，官方文档写的是『auth:api』
         // 但是我推荐用 『jwt.auth』，效果是一样的，但是有更加丰富的报错信息返回
     }
@@ -23,7 +23,8 @@ class AuthController extends Controller
 
         return $this->respondWithToken($token);
     }
-        public function me()
+
+    public function me()
     {
         return response()->json(auth('api')->user());
     }
