@@ -43,6 +43,8 @@ Route::group(['middleware' => ['jwt.auth']], function() {
     Route::delete('products/{product}/favorite', 'ProductsController@disfavor');
 
     Route::post('cart', 'CartController@add');
+    Route::get('cart', 'CartController@index');
+    Route::delete('cart/{sku}', 'CartController@remove');
 
 });
 
