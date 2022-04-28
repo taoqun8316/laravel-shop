@@ -37,6 +37,7 @@ Route::group(['middleware' => ['jwt.auth']], function() {
     Route::post('user_addresses/{user_address}', 'UserAddressesController@update');
     Route::delete('user_addresses/{user_address}', 'UserAddressesController@delete');
 
+    Route::get('products/favorites', 'ProductsController@favorites');
     Route::get('products/{product}', 'ProductsController@show');
     Route::post('products/{product}/favorite', 'ProductsController@favor');
     Route::delete('products/{product}/favorite', 'ProductsController@disfavor');

@@ -80,4 +80,13 @@ class ProductsController extends Controller
         return $this->success("取消收藏成功", []);
     }
 
+    public function favorites(Request $request)
+    {
+        $products = $request->user()->favoriteProducts()->paginate(16);
+
+        return $this->success("返回成功", [
+            'products' => $products
+        ]);
+    }
+
 }
