@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
 use App\Http\Requests\OrderRequest;
+use App\Jobs\CloseOrder;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\UserAddress;
@@ -63,9 +64,10 @@ class OrdersController extends Controller
             return $order;
         });
 
+        //(new CloseOrder($order, config('app.order_ttl')))->handle();die;
+        $this->dispatch(new CloseOrder($order, config('app.order_ttl')));
         return $this->success("添加成功", [
             "order" => $order
         ]);
     }
-
 }

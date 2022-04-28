@@ -27,7 +27,7 @@ class ProductSku extends Model
     public function decreaseStock($amount)
     {
         if ($amount>0){
-            return $this->where("stock", ">=", $amount)->decrement("stock", $amount);
+            return $this->where("id", $this->id)->where("stock", ">=", $amount)->decrement("stock", $amount);
         }
     }
 
