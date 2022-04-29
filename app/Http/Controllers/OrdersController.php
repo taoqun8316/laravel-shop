@@ -13,6 +13,7 @@ use App\Services\OrderService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Services\CartService;
+use App\Models\CouponCode;
 
 class OrdersController extends Controller
 {
@@ -40,7 +41,15 @@ class OrdersController extends Controller
     {
         $user = $request->user();
         $address = UserAddress::find($request->input("address_id"));
-        $order = $orderService->store($user, $address, $request->input("remark"),$request->input("items"));
+
+        if ($code = $request->input('coupon_code')) {
+            $coupon = CouponCode::where('code', $code)->first();
+            if (!$coupon) {
+                throw new ApiException('优惠券不存在');
+            }
+        }
+
+        $order = $orderService->store($user, $address, $request->input("remark"),$request->input("items"), $coupon);
 
         return $this->success("添加成功", [
             "order" => $order
