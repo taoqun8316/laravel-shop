@@ -29,6 +29,8 @@ Route::get('/register', function(){
 });
 
 Route::get('products', 'ProductsController@index');
+Route::post('payment/alipay/notify', 'PaymentController@alipayNotify');
+
 
 Route::group(['middleware' => ['jwt.auth']], function() {
     Route::get('user_addresses', 'UserAddressesController@index');
@@ -49,6 +51,9 @@ Route::group(['middleware' => ['jwt.auth']], function() {
     Route::post('orders', 'OrdersController@store');
     Route::get('orders', 'OrdersController@index');
     Route::get('orders/{order}', 'OrdersController@show');
+
+    Route::get('payment/{order}/alipay', 'PaymentController@payByAlipay');
+
 
 });
 
