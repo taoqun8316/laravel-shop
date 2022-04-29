@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Http\Requests\ApplyRefundRequest;
 
 class ProductsController extends Controller
 {
@@ -54,6 +55,14 @@ class ProductsController extends Controller
             $favored = boolval($user->favoriteProducts()->find($product->id));
         }
 
+        $reviews = OrderItem::query()
+            ->with(['order.user', 'productSku']) // 预先加载关联关系
+            ->where('product_id', $product->id)
+            ->whereNotNull('reviewed_at') // 筛选出已评价的
+            ->orderBy('reviewed_at', 'desc') // 按评价时间倒序
+            ->limit(10) // 取出 10 条
+            ->get();
+
         return $this->success("获取成功", [
             'product' => $product,
             'favored' => $favored
@@ -87,6 +96,28 @@ class ProductsController extends Controller
         return $this->success("返回成功", [
             'products' => $products
         ]);
+    }
+
+    public function applyRefund(Order $order, ApplyRefundRequest $request)
+    {
+        $this->authorize('own', $order);
+        if (!$order->paid_at) {
+            throw new InvalidRequestException('该订单未支付，不可退款');
+        }
+        // 判断订单退款状态是否正确
+        if ($order->refund_status !== Order::REFUND_STATUS_PENDING) {
+            throw new InvalidRequestException('该订单已经申请过退款，请勿重复申请');
+        }
+        // 将用户输入的退款理由放到订单的 extra 字段中
+        $extra                  = $order->extra ?: [];
+        $extra['refund_reason'] = $request->input('reason');
+        // 将订单退款状态改为已申请退款
+        $order->update([
+            'refund_status' => Order::REFUND_STATUS_APPLIED,
+            'extra'         => $extra,
+        ]);
+
+        return $order;
     }
 
 }

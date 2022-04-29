@@ -51,10 +51,15 @@ Route::group(['middleware' => ['jwt.auth']], function() {
     Route::post('orders', 'OrdersController@store');
     Route::get('orders', 'OrdersController@index');
     Route::get('orders/{order}', 'OrdersController@show');
+    Route::post('orders/{order}/received', 'OrdersController@received');
+    Route::get('orders/{order}/review', 'OrdersController@review');
+    Route::post('orders/{order}/review', 'OrdersController@sendReview');
+    Route::post('orders/{order}/apply_refund', 'OrdersController@applyRefund');
 
     Route::get('payment/{order}/alipay', 'PaymentController@payByAlipay');
     Route::get('payment/{order}/wechat', 'PaymentController@payByWechat');
     Route::post('payment/wechat/notify', 'PaymentController@wechatNotify');
+    Route::post('payment/wechat/refund_notify', 'PaymentController@wechatRefundNotify');
 
 });
 
