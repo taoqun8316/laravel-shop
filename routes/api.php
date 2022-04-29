@@ -53,7 +53,8 @@ Route::group(['middleware' => ['jwt.auth']], function() {
     Route::get('orders/{order}', 'OrdersController@show');
 
     Route::get('payment/{order}/alipay', 'PaymentController@payByAlipay');
-
+    Route::get('payment/{order}/wechat', 'PaymentController@payByWechat');
+    Route::post('payment/wechat/notify', 'PaymentController@wechatNotify');
 
 });
 
