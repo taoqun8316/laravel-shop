@@ -11,7 +11,8 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'description', 'image', 'on_sale',
+        'title', 'long_title',
+        'description', 'image', 'on_sale',
         'rating', 'sold_count', 'review_count', 'price'
     ];
     protected $casts = [
@@ -35,5 +36,21 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function properties()
+    {
+        return $this->hasMany(ProductProperty::class);
+    }
+
+    public function getGroupedPropertiesAttribute()
+    {
+        return $this->properties
+            // 按照属性名聚合，返回的集合的 key 是属性名，value 是包含该属性名的所有属性集合
+            ->groupBy('name')
+            ->map(function ($properties) {
+                // 使用 map 方法将属性集合变为属性值集合
+                return $properties->pluck('value')->all();
+            });
     }
 }
