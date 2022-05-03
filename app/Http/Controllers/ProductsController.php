@@ -8,54 +8,86 @@ use App\Services\CategoryService;
 use Illuminate\Http\Request;
 use App\Http\Requests\ApplyRefundRequest;
 use App\Models\Category;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductsController extends Controller
 {
     public function index(Request $request, CategoryService $categoryService)
     {
-        $builder = Product::query()->where("on_sale", true);
+        $page    = $request->input('page', 1);
+        $perPage = 16;
 
-        if ($search = $request->input("search","")){
-            $like = "%".$search."%";
-            $builder->where(function ($query) use ($like) {
-                $query->where("title", "like", $like)
-                ->orWhere("description", "like", $like)
-                ->orWhereHas("skus", function ($query) use ($like){
-                    $query->where('title', 'like', $like)->orWhere('description', 'like', $like);
-                });
-            });
-        }
+        $builder = (new ProductSearchBuilder())->onSale()->paginate($perPage, $page);
 
         if ($request->input('category_id') && $category = Category::find($request->input('category_id'))) {
-            // 如果这是一个父类目
-            if ($category->is_directory) {
-                // 则筛选出该父类目下所有子类目的商品
-                $builder->whereHas('category', function ($query) use ($category) {
-                    // 这里的逻辑参考本章第一节
-                    $query->where('path', 'like', $category->path.$category->id.'-%');
-                });
-            } else {
-                // 如果这不是一个父类目，则直接筛选此类目下的商品
-                $builder->where('category_id', $category->id);
+            $builder->category($category);
+        }
+
+        if ($search = $request->input('search', '')) {
+            $keywords = array_filter(explode(' ', $search));
+            $builder->keywords($keywords);
+        }
+
+        if ($search || isset($category)) {
+            $builder->aggregateProperties();
+        }
+        $propertyFilters = [];
+        if ($filterString = $request->input('filters')) {
+            $filterArray = explode('|', $filterString);
+            foreach ($filterArray as $filter) {
+                list($name, $value) = explode(':', $filter);
+                $propertyFilters[$name] = $value;
+                // 调用查询构造器的属性筛选
+                $builder->propertyFilter($name, $value);
             }
         }
 
         if ($order = $request->input('order', '')) {
             if (preg_match('/^(.+)_(asc|desc)$/', $order, $m)) {
                 if (in_array($m[1], ['price', 'sold_count', 'rating'])) {
+                    // 调用查询构造器的排序
                     $builder->orderBy($m[1], $m[2]);
                 }
             }
         }
 
-        $products = $builder->paginate(16);
+        $result = app('es')->search($builder->getParams());
+
+        $properties = [];
+        // 如果返回结果里有 aggregations 字段，说明做了分面搜索
+        if (isset($result['aggregations'])) {
+            // 使用 collect 函数将返回值转为集合
+            $properties = collect($result['aggregations']['properties']['properties']['buckets'])
+                ->map(function ($bucket) {
+                    return [
+                        'key'    => $bucket['key'],
+                        'values' => collect($bucket['value']['buckets'])->pluck('key')->all(),
+                    ];
+                })->filter(function ($property) use ($propertyFilters) {
+                    // 过滤掉只剩下一个值 或者 已经在筛选条件里的属性
+                    return count($property['values']) > 1 && !isset($propertyFilters[$property['key']]) ;
+                });;
+        }
+
+        $productIds = collect($result['hits']['hits'])->pluck('_id')->all();
+        $products = Product::query()
+            ->whereIn('id', $productIds)
+            ->orderByRaw(sprintf("FIND_IN_SET(id, '%s')", join(",",$productIds)))
+            ->get();
+
+        $pager = new LengthAwarePaginator($products, $result['hits']['total']['value'], $perPage, $page, [
+            'path' => route('products.index', false), // 手动构建分页的 url
+        ]);
 
         return $this->success("获取成功",[
-            'products' => $products,
+            'products' => $pager,
             'filters'  => [
                 'search' => $search,
                 'order'  => $order,
             ],
+            'properties' => $properties,
+            'category' => $category ?? null,
+            'propertyFilters' => $propertyFilters,
             'categoryTree' => $categoryService->getCategoryTree(),
         ]);
     }

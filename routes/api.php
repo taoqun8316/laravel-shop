@@ -18,7 +18,7 @@ Route::get('/register', function(){
     ]);
 });
 
-Route::get('products', 'ProductsController@index');
+Route::get('products', 'ProductsController@index')->name("products.index");
 Route::post('payment/alipay/notify', 'PaymentController@alipayNotify');
 
 
