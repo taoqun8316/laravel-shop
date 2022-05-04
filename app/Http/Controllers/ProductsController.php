@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests\ApplyRefundRequest;
 use App\Models\Category;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Services\ProductService;
+use App\SearchBuilders\ProductSearchBuilder;
 
 class ProductsController extends Controller
 {
@@ -92,7 +94,7 @@ class ProductsController extends Controller
         ]);
     }
 
-    public function show(Product $product, Request $request)
+    public function show(Product $product, Request $request, ProductService $service)
     {
         if (!$product->on_sale) {
             throw new ApiException('商品未上架');
@@ -104,7 +106,7 @@ class ProductsController extends Controller
             $favored = boolval($user->favoriteProducts()->find($product->id));
         }
 
-        $reviews = OrderItem::query()
+        $product = OrderItem::query()
             ->with(['order.user', 'productSku']) // 预先加载关联关系
             ->where('product_id', $product->id)
             ->whereNotNull('reviewed_at') // 筛选出已评价的
@@ -112,9 +114,16 @@ class ProductsController extends Controller
             ->limit(10) // 取出 10 条
             ->get();
 
+        $similarProductIds = $service->getSimilarProductIds($product, 4);
+        $similarProducts   = Product::query()
+            ->whereIn('id', $similarProductIds)
+            ->orderByRaw(sprintf("FIND_IN_SET(id, '%s')", join(',', $similarProductIds)))
+            ->get();
+
         return $this->success("获取成功", [
             'product' => $product,
-            'favored' => $favored
+            'favored' => $favored,
+            'similar' => $similarProducts,
         ]);
     }
 
